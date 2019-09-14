@@ -96,18 +96,18 @@ public:
 			// TODO
 			// Update help message
 			case 'h':
-				std::cout << "This program reads a CSV file that contains song names,\n"
-					<< "the artist who wrote them, and the number of plays each song\n"
-					<< "has on Spotify.  It then outputs the number of songs specified\n"
-					<< "in the command line arguments (the print option), which\n"
-					<< "defaults to 2, sorted by the option specified (one of name,\n"
-					<< "artist, or listens).\n"
-					<< "Usage: \'./project0\n\t[--listens | -l]\n"
-					<< "\t[--name | -n]\n"
-					<< "\t[--artist | -a]\n"
-					<< "\t[--print | -p] <# of songs to print>\n"
+				std::cout << "This program reads an input file that contains the file type,\n"
+					<< "map size, and details of the search area. It then attempts to find the\n"
+					<< "hidden treasure. It will output stats and a path, if you so choose.\n"
+					<< "Usage: \'./hunt\n\t[--captain | -c] <queue / stack>\n"
+					<< "\t[--first-mate | -f] <queue / stack>\n"
+					<< "\t[--hunt-order | -o] <directions>\n"
+					<< "\t[--verbose | -v]\n"
+					<< "\t[--stats | -s]\n"
+					<< "\t[--show-path | -p] <M / L>\n"
 					<< "\t[--help | -h]\n"
-					<< "\t< <CSV Music File>\'" << std::endl;
+					<< "\t< <input file>\n"
+					<< "\t> <output file>\'" << std::endl;
 				exit(0);
 				
 			default:
@@ -117,7 +117,7 @@ public:
 	} //get_options
 
 	/*
-	 *TODO
+	 *
 	 * THESE FUNCTIONS READ FROM A MAP OR A LIST AND UPDATE THE area_map MEMBER
 	 * 
 	 */
@@ -127,21 +127,21 @@ public:
 	// THIS FUNCTION UPDATES area_map
 	void read_from_map()
 	{
-		char symbol;
+		char symb;
 		// Loop over rows
 		for(int row = 0; row < map_size; ++row)
 		{
 			// Loop over columns
 			for(int col = 0; col < map_size; ++col)
 			{
-				cin >> symbol;
-				area_map[row][col].symbol = symbol;
+				cin >> symb;
+				area_map[row][col].symbol = symb;
 				// UPDATE START AND TREASURE LOCATIONS
-				if(symbol == '$')
+				if(symb == '$')
 				{
 					treasure = { row, col };
 				}
-				if(symbol == '@')
+				if(symb == '@')
 				{
 					start = { row, col };
 				}
@@ -160,6 +160,7 @@ public:
 		while(cin >> row >> col >> symb)
 		{
 			area_map[row][col].symbol = symb;
+			// UPDATE START AND TREASURE LOCATIONS
 			if(symb == '$')
 			{
 				treasure = { row, col };
@@ -214,6 +215,9 @@ public:
 		return;
 	}
 
+	/**
+	 * FOR DEBUGGING PURPOSES
+	 */
 	void print_area_map()
 	{
 		cout << endl;
@@ -226,8 +230,19 @@ public:
 			cout << endl;
 		} //for
 		cout << endl;
-		cout << "Start: " << std::get<0>(start) << std::get<1>(start) << endl;
-		cout << "Treasure: " << std::get<0>(treasure) << std::get<0>(treasure) << endl;
+		cout << "Start: " << start.first << start.second << endl;
+		cout << "Treasure: " << treasure.first << treasure.second << endl;
+	}
+	
+	void print_options() const
+	{
+		cout << "Options: " << endl;
+		cout << "Captain Container: " << captainCont << endl;
+		cout << "First Mate Container: " << firstCont << endl;
+		cout << "Hunt Order: " << searchOrder << endl;
+		cout << "Verbose: " << verbose << endl;
+		cout << "Statistics: " << stats << endl;
+		cout << "Show Path: " << showPath << endl;
 	}
 	
 
@@ -260,8 +275,8 @@ private:
 
 	// Variables to be read in/ defaults
 	int map_size = 0;
-	std::tuple<int, int> start;
-	std::tuple<int, int> treasure;
+	std::pair<int, int> start;
+	std::pair<int, int> treasure = {-1, -1};
 	std::string searchOrder = "nesw";
 	char captainCont = 's';
 	char firstCont = 'q';
@@ -282,8 +297,8 @@ int main(int argc, char *argv[])
 
 	Hunt hunt;
 	hunt.get_options(argc, argv);
-	hunt.read_data;
+	hunt.read_data();
 	hunt.print_area_map();
-	
+	hunt.print_options();
 	return 0;
 }
