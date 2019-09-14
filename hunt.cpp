@@ -13,6 +13,7 @@ using std::endl;
 
 class Hunt
 {
+public:
 	/*
 	 * THIS FUNCTION READS COMMAND LINE AND UPDATES THE PARAMETERS OF THE HUNT
 	 */
@@ -210,8 +211,24 @@ class Hunt
 		{
 			read_from_list();
 		}
+		return;
 	}
 
+	void print_area_map()
+	{
+		cout << endl;
+		for(int row = 0; row < map_size; ++row)
+		{
+			for(int col = 0; col < map_size; ++col)
+			{
+				cout << area_map[row][col].symbol;
+			} //for
+			cout << endl;
+		} //for
+		cout << endl;
+		cout << "Start: " << std::get<0>(start) << std::get<1>(start) << endl;
+		cout << "Treasure: " << std::get<0>(treasure) << std::get<0>(treasure) << endl;
+	}
 	
 
 
@@ -263,6 +280,10 @@ int main(int argc, char *argv[])
 {
 	std::ios_base::sync_with_stdio(false);
 
+	Hunt hunt;
+	hunt.get_options(argc, argv);
+	hunt.read_data;
+	hunt.print_area_map();
 	
 	return 0;
 }
