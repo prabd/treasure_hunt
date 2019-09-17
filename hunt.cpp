@@ -10,6 +10,15 @@ using std::cin;
 using std::cout;
 using std::endl;
 
+bool withinBounds(int row, int col, int size)
+{
+	if(row >= 0 && row < size && col >= 0 && col < size)
+	{
+		return true;
+	}
+	return false;
+}
+
 class Hunt
 {
 public:
@@ -42,7 +51,7 @@ public:
 				{
 					exit(1);
 				}
-				captainCont = optarg[0];
+				cap_type = optarg[0];
 				break;
 
 			case 'f':
@@ -50,7 +59,7 @@ public:
 				{
 					exit(1);
 				}
-				firstCont = optarg[0];
+				first_type = optarg[0];
 				break;
 
 			case 'o':
@@ -75,7 +84,7 @@ public:
 						exit(1);
 					} //if
 				} //for
-				searchOrder = str;
+				order = str;
 				break;
 			}
 			case 'v':
@@ -89,7 +98,7 @@ public:
 				{
 					exit(1);
 				}
-				showPath = *optarg;
+				show_path = *optarg;
 				break;
 				
 			// TODO
@@ -114,64 +123,6 @@ public:
 			} //switch
 		} //while
 	} //get_options
-
-	/*
-	 *
-	 * THESE FUNCTIONS READ FROM A MAP OR A LIST AND UPDATE THE area_map MEMBER
-	 * 
-	 */
-
-	// Read_data helper function 1
-	// REQUIRES: area_map is already default initialized with proper size
-	// THIS FUNCTION UPDATES area_map
-	void read_from_map()
-	{
-		char symb;
-		// Loop over rows
-		for(int row = 0; row < map_size; ++row)
-		{
-			// Loop over columns
-			for(int col = 0; col < map_size; ++col)
-			{
-				cin >> symb;
-				area_map[row][col].symbol = symb;
-				// UPDATE START AND TREASURE LOCATIONS
-				/*if(symb == '$')
-				{
-					treasure = { row, col };
-				}*/
-				if(symb == '@')
-				{
-					start = { row, col };
-				}
-			} //for
-		} //for
-	} //read_from_map
-
-	// Read file helper function 2
-	// REQUIRES: area_map is already default initialized with proper size
-	// THIS FUNCTION UPDATES area_map
-	void read_from_list()
-	{
-		int row;
-		int col;
-		char symb;
-		while(cin >> row >> col >> symb)
-		{
-			area_map[row][col].symbol = symb;
-			// UPDATE START AND TREASURE LOCATIONS
-			/*if(symb == '$')
-			{
-				treasure = { row, col };
-			}
-			if(symb == '@')*/
-			{
-				start = { row, col };
-			}
-		}
-	}
-
-	
 
 	// THIS FUNCTION DETERMINES FILE-TYPE AND SIZE, RESERVES VECTOR SPACE,
 	// AND CALLS HELPER
@@ -214,90 +165,126 @@ public:
 		return;
 	}
 
+private:
+	/*
+	*
+	 * THESE FUNCTIONS READ FROM A MAP OR A LIST AND UPDATE THE area_map MEMBER
+	*
+	 */
+
+	 // read_data helper function 1
+	// REQUIRES: area_map is already default initialized with proper size
+	// THIS FUNCTION UPDATES area_map
+	void read_from_map()
+	{
+		char symb;
+		// Loop over rows
+		for (int row = 0; row < map_size; ++row)
+		{
+			// Loop over columns
+			for (int col = 0; col < map_size; ++col)
+			{
+				cin >> symb;
+				area_map[row][col].symbol = symb;
+				// UPDATE START AND TREASURE LOCATIONS
+				/*if(symb == '$')
+				{
+					treasure = { row, col };
+				}*/
+				if (symb == '@')
+				{
+					start = { row, col };
+				}
+			} //for
+		} //for
+	} //read_from_map
+
+	// read_data helper function 2
+	// REQUIRES: area_map is already default initialized with proper size
+	// THIS FUNCTION UPDATES area_map
+	void read_from_list()
+	{
+		int row;
+		int col;
+		char symb;
+		while (cin >> row >> col >> symb)
+		{
+			area_map[row][col].symbol = symb;
+			// UPDATE START AND TREASURE LOCATIONS
+			/*if(symb == '$')
+			{
+				treasure = { row, col };
+			}
+			if(symb == '@')*/
+			{
+				start = { row, col };
+			}
+		}
+	}
+	
+	// Helper function to check if a location is land
+	bool is_land(int row, int col) const
+	{
+		char symb = area_map[row][col].symbol;
+		if (symb == 'o' || symb == '$')
+		{
+			return true;
+		}
+		return false;
+	}
+
+	// Helper function to check if a location is water
+	bool is_water(int row, int col) const
+	{
+		char symb = area_map[row][col].symbol;
+		if (symb == '.')
+		{
+			return true;
+		}
+		return false;
+	}
+	
 	// Helper Function for First-Mate Search
 	// UPDATES direction of discovered land
 	// RETURNS: coordinates of discovered land, or -1, -1 if none found
-	std::pair<int, int> search_land(char dir, std::pair<int,int> loc)
+	std::pair<int, int> search_land(char dir, std::pair<int, int> loc)
 	{
-		if(dir == 'n')
+		int newRow = loc.first;
+		int newCol = loc.second;
+
+		// Update search coordinates based on direction
+		if (dir == 'n')
 		{
-			int newRow = loc.first - 1;
-			// Check if north loc exists
-			if(newRow >= 0) //row
-			{
-				char symb = area_map[newRow][loc.second].symbol;
-				// If land and not discovered
-				if((symb == 'o' || symb == '$') && !area_map[newRow][loc.second].discovered)
-				{
-					// Update direction and discovered vars
-					area_map[newRow][loc.second].direction = dir;
-					area_map[newRow][loc.second].discovered = true;
-					return { newRow, loc.second };
-				}
-			}
-			//Else
-			return { -1, -1 };
+			newRow -= 1;
 		}
-		else if(dir == 's')
+		else if (dir == 's')
 		{
-			int newRow = loc.first + 1;
-			// Check if south loc exists
-			if (newRow < map_size) //row
-			{
-				char symb = area_map[newRow][loc.second].symbol;
-				// If land and not discovered
-				if ((symb == 'o' || symb == '$') && !area_map[newRow][loc.second].discovered)
-				{
-					// Update direction and discovered vars
-					area_map[newRow][loc.second].direction = dir;
-					area_map[newRow][loc.second].discovered = true;
-					return { newRow, loc.second };
-				}
-			}
-			//Else
-			return { -1, -1 };
-		}
-		else if (dir == 'w')
-		{
-			int newCol = loc.second - 1;
-			// Check if west loc exists
-			if (newCol >= 0) //col
-			{
-				char symb = area_map[loc.first][newCol].symbol;
-				// If land and not discovered
-				if ((symb == 'o' || symb == '$') && !area_map[loc.first][newCol].discovered)
-				{
-					// Update direction and discovered vars
-					area_map[loc.first][newCol].direction = dir;
-					area_map[loc.first][newCol].discovered = true;
-					return { loc.first, newCol };
-				}
-			}
-			//Else
-			return { -1, -1 };
+			newRow += 1;
 		}
 		else if (dir == 'e')
 		{
-			int newCol = loc.second + 1;
-			// Check if east loc exists
-			if (newCol < map_size) //col
-			{
-				char symb = area_map[loc.first][newCol].symbol;
-				// If land and not discovered
-				if ((symb == 'o' || symb == '$') && !area_map[loc.first][newCol].discovered)
-				{
-					// Update direction and discovered vars
-					area_map[loc.first][newCol].direction = dir;
-					area_map[loc.first][newCol].discovered = true;
-					return { loc.first, newCol };
-				}
-			}
-			//Else
-			return { -1, -1 };
+			newCol += 1;
 		}
+		else
+		{
+			newCol -= 1;
+		}
+
+		// Check if within bounds
+		if (withinBounds(newRow, newCol, map_size))
+		{
+			// Check if land and not discovered
+			if (is_land(newRow, newCol) && !area_map[newRow][newCol].disc)
+			{
+				// Update direction and disc
+				area_map[newRow][newCol].dir = dir;
+				area_map[newRow][newCol].disc = true;
+				return { newRow, newCol };
+			}
+		}
+		return { -1, -1 };
 	}
-
-
+	
 	// THIS FUNCTION TAKES IN A STARTING LAND POSITION AND SEARCHES
 	// CONTIGUOUS LAND ACCORDING TO SEARCH ORDER
 	// UPDATES: Treasure if found
@@ -305,55 +292,228 @@ public:
 	// RETURNS: True if treasure found, false if no treasure found
 	bool first_mate_search(std::pair<int, int> start)
 	{
-		// Push start to be first element in land_container
-		land_container.push_front(start);
-		std::pair<int, int> current;
-		while(!land_container.empty())
+		
+		// Push start to be first element in land_cont
+		land_cont.push_front(start);
+		// Special case if start is treasure
+		if(area_map[start.first][start.second].symbol == '$')
+		{
+			treasure.first = start.first;
+			treasure.second = start.second;
+			++land_count;
+			return true;
+		}
+		// While not empty, search
+		while(!land_cont.empty())
 		{
 			
-			current = land_container.front();
-			land_container.pop_front(); //land_cont now empty
-
+			std::pair<int, int> current = land_cont.front();
+			land_cont.pop_front(); //land_cont now empty
+			++land_count;
 				
 			// Discover adjacent land in order
 			for(int i = 0; i < 4; ++i)
 			{
 				// Call helper function
-				std::pair<int, int> land = search_land(searchOrder[i], current);
+				std::pair<int, int> land = search_land(order[i], current);
 				
 				// If found
 				if(land.first != -1 && land.second != -1)
 				{
-					// Add to container according to container
-					if (firstCont == 's') 
-					{
-						land_container.push_front(land);
-					}
-					if (firstCont == 'q')
-					{
-						land_container.push_back(land);
-					}
-						
 					// Check if treasure
-					if(area_map[land.first][land.second].symbol == '$')
+					if (area_map[land.first][land.second].symbol == '$')
 					{
 						treasure = land;
 						return true;
-					} //if treasure
+					} 
+					
+					// Add to container accordingly
+					if (first_type == 's') 
+					{
+						land_cont.push_front(land);
+					}
+					else if (first_type == 'q')
+					{
+						land_cont.push_back(land);
+					}
+						
+
 				} //if found
 			} //for
 		}
 		// If you get to this point, container is empty, no treasure was found.
 		return false;
 	}
-	
 
+	// Helper function for captain_search
+	// UPDATES: dir and disc
+	// RETURNS: location if discovered, -1, -1 if nothing new found
+	std::pair<int, int> search_water(char dir, std::pair<int, int> loc)
+	{
+		int new_row = loc.first;
+		int new_col = loc.second;
 
+		// Update search coordinates based on direction
+		if (dir == 'n')
+		{
+			new_row -= 1;
+		}
+		else if (dir == 's')
+		{
+			new_row += 1;
+		}
+		else if (dir == 'e')
+		{
+			new_col += 1;
+		}
+		else
+		{
+			new_col -= 1;
+		}
 
+		// Check if within bounds
+		if(withinBounds(new_row, new_col, map_size))
+		{
+			// Check if not discovered and not impassable
+			if(area_map[new_row][new_col].symbol != '#' && !area_map[new_row][new_col].disc)
+			{
+				// Update dir and disc
+				area_map[new_row][new_col].disc = true;
+				area_map[new_row][new_col].dir = dir;
+				return { new_row, new_col };
+			}
+		}
 
+		// Else
+		return { -1, -1 }; 
+	}
 
+public:
+	// THIS FUNCTION TAKES IN A STARTING WATER POSITION AND SEARCHES
+	// LAND/WATER NEARBY
+	// IF LAND IS FOUND, THE FIRST MATE IS DISPATCHED
+	// RETURNS: True if treasure found, false if no treasure found
+	bool captain_search()
+	{
+		// VERBOSE
+		if(verbose)
+		{
+			cout << "Treasure hunt started at: "
+				<< start.first << "," << start.second << "\n";
+		}
+		
+		// Push start to first element in sea_cont
+		sea_cont.push_front(start);
+		while(!sea_cont.empty())
+		{
+			std::pair<int, int> current = sea_cont.front();
+			sea_cont.pop_front(); // sea_cont now empty
+			++water_count;
+			// Discover adjacent locations in order
+			for(int i = 0; i < 4; ++i)
+			{
+				std::pair<int, int> loc = search_water(order[i], current);
+				// If valid
+				if(withinBounds(loc.first, loc.second, map_size))
+				{
+					// If land, call first-mate
+					if(is_land(loc.first, loc.second))
+					{
+						// VERBOSE
+						if (verbose)
+						{
+							cout << "Went ashore at: " << loc.first << ","
+								<< loc.second << "\n" << "Searching island... ";
+						}
+						
+						bool found = first_mate_search(loc);
+						++dispatches;
+						
+						// If first-mate returns true, return true
+						if(found)
+						{
+							// VERBOSE
+							if (verbose)
+							{
+								cout << "party found treasure at " << treasure.first
+									<< "," << treasure.second << "\n";
+							}
+							
+							return true;
+						} // if found
+						
+						// VERBOSE
+						if (verbose)
+						{
+							cout << "party returned with no treasure\n";
+						}
+					} // if land
+					
+					// If water, push to container
+					else if(is_water(loc.first, loc.second))
+					{
+						if(cap_type == 's')
+						{
+							sea_cont.push_front(loc);
+						}
+						else if(cap_type == 'q')
+						{
+							sea_cont.push_back(loc);
+						}
+					}
+				} //if valid
+			} //for
+			
+		} // while
 
+		// If you get to this point, sea_cont is empty, no treasure has been found.
 
+		// VERBOSE
+		if (verbose)
+		{
+			cout << "Treasure hunt failed\n";
+		}
+		return false;
+	}
+
+	// Prints additional statistics
+	void print_stats() const
+	{
+		if(stats){
+			cout << "--- STATS ---\n"
+				<< "Starting location: " << start.first << "," << start.second << "\n"
+				<< "Water locations investigated: " << water_count << "\n"
+				<< "Land locations investigated: " << land_count << "\n"
+				<< "Went ashore: " << dispatches << "\n";
+
+			// If treasure was found
+			if (treasure.first != -1 && treasure.second != -1)
+			{
+				cout << "Path length: " << path_len << "\n"
+					<< "Treasure Location: " << treasure.first << "," << treasure.second
+					<< "\n" << "--- STATS ---\n";
+			}
+		}
+	}
+
+	// Prints whether treasure was found
+	void print_results() const
+	{
+		// If treasure not found
+		if(treasure.first == -1 || treasure.second == -1)
+		{
+			int count = water_count + land_count;
+			cout << "No treasure found after investigating "
+				<< count << "locations." << endl;
+		}
+		
+		else
+		{
+			cout << "Treasure found at " << treasure.first << ","
+				<< treasure.second << " with path length " << path_len
+				<< ".\n";
+		}
+	}
 	
 	/**
 	 * FOR DEBUGGING PURPOSES
@@ -373,18 +533,17 @@ public:
 		cout << "Start: " << start.first << start.second << endl;
 		cout << "Treasure: " << treasure.first << treasure.second << endl;
 	}
-	
+
 	void print_options() const
 	{
 		cout << "Options: " << endl;
-		cout << "Captain Container: " << captainCont << endl;
-		cout << "First Mate Container: " << firstCont << endl;
-		cout << "Hunt Order: " << searchOrder << endl;
+		cout << "Captain Container: " << cap_type << endl;
+		cout << "First Mate Container: " << first_type << endl;
+		cout << "Hunt Order: " << order << endl;
 		cout << "Verbose: " << verbose << endl;
 		cout << "Statistics: " << stats << endl;
-		cout << "Show Path: " << showPath << endl;
+		cout << "Show Path: " << show_path << endl;
 	}
-	
 
 
 private:
@@ -397,18 +556,18 @@ private:
 	//		- A 2-D array used as a map will be populated with this struct.
 	struct Location
 	{
-		bool discovered = false;
+		bool disc = false;
 		char symbol = '.'; // either '#', 'o', '$', '@', or  '.'
 	
 		// either 'n', 's', 'e', or 'w'. Moved [direction] to get to this location.
-		char direction = '0'; 
+		char dir = '0'; 
 	};
 
 	// This will be the container used on sea
-	std::deque< std::pair<int, int> > sea_container;
+	std::deque< std::pair<int, int> > sea_cont;
 	
 	// Container used on land
-	std::deque< std::pair<int, int> > land_container;
+	std::deque< std::pair<int, int> > land_cont;
 
 	// 2-D array of Locations, index with vec[row][col]
 	std::vector<std::vector<Location> > area_map;
@@ -417,13 +576,17 @@ private:
 	int map_size = 0;
 	std::pair<int, int> start;
 	std::pair<int, int> treasure = {-1, -1};
-	std::string searchOrder = "nesw";
-	char captainCont = 's';
-	char firstCont = 'q';
+	std::string order = "nesw";
+	char cap_type = 's';
+	char first_type = 'q';
 	bool verbose = false;
 	bool stats = false;
-	char showPath = '0'; //default is no displayed path
-	
+	char show_path = '0'; //default is no displayed path
+	// Variables to keep track of stats
+	int water_count = 0;
+	int land_count = 0;
+	int dispatches = 0;
+	int path_len = 0;
 	
 };
 
@@ -435,10 +598,14 @@ int main(int argc, char *argv[])
 {
 	std::ios_base::sync_with_stdio(false);
 
+	// Create a hunt, read options, and read input file
 	Hunt hunt;
 	hunt.get_options(argc, argv);
 	hunt.read_data();
-	hunt.print_area_map();
-	hunt.print_options();
+	//print_area_map();
+	//hunt.print_options();
+	bool found = hunt.captain_search();
+	
+	
 	return 0;
 }
