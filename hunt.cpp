@@ -1,7 +1,6 @@
 // PROJECT IDENTIFIER = 40FB54C86566B9DDEAB902CC80E8CE85C1C62AAD
 
 #include <getopt.h>
-#include <iomanip>
 #include <string>
 #include <deque>
 #include <vector>
@@ -137,10 +136,10 @@ public:
 				cin >> symb;
 				area_map[row][col].symbol = symb;
 				// UPDATE START AND TREASURE LOCATIONS
-				if(symb == '$')
+				/*if(symb == '$')
 				{
 					treasure = { row, col };
-				}
+				}*/
 				if(symb == '@')
 				{
 					start = { row, col };
@@ -161,11 +160,11 @@ public:
 		{
 			area_map[row][col].symbol = symb;
 			// UPDATE START AND TREASURE LOCATIONS
-			if(symb == '$')
+			/*if(symb == '$')
 			{
 				treasure = { row, col };
 			}
-			if(symb == '@')
+			if(symb == '@')*/
 			{
 				start = { row, col };
 			}
@@ -215,6 +214,147 @@ public:
 		return;
 	}
 
+	// Helper Function for First-Mate Search
+	// UPDATES direction of discovered land
+	// RETURNS: coordinates of discovered land, or -1, -1 if none found
+	std::pair<int, int> search_land(char dir, std::pair<int,int> loc)
+	{
+		if(dir == 'n')
+		{
+			int newRow = loc.first - 1;
+			// Check if north loc exists
+			if(newRow >= 0) //row
+			{
+				char symb = area_map[newRow][loc.second].symbol;
+				// If land and not discovered
+				if((symb == 'o' || symb == '$') && !area_map[newRow][loc.second].discovered)
+				{
+					// Update direction and discovered vars
+					area_map[newRow][loc.second].direction = dir;
+					area_map[newRow][loc.second].discovered = true;
+					return { newRow, loc.second };
+				}
+			}
+			//Else
+			return { -1, -1 };
+		}
+		else if(dir == 's')
+		{
+			int newRow = loc.first + 1;
+			// Check if south loc exists
+			if (newRow < map_size) //row
+			{
+				char symb = area_map[newRow][loc.second].symbol;
+				// If land and not discovered
+				if ((symb == 'o' || symb == '$') && !area_map[newRow][loc.second].discovered)
+				{
+					// Update direction and discovered vars
+					area_map[newRow][loc.second].direction = dir;
+					area_map[newRow][loc.second].discovered = true;
+					return { newRow, loc.second };
+				}
+			}
+			//Else
+			return { -1, -1 };
+		}
+		else if (dir == 'w')
+		{
+			int newCol = loc.second - 1;
+			// Check if west loc exists
+			if (newCol >= 0) //col
+			{
+				char symb = area_map[loc.first][newCol].symbol;
+				// If land and not discovered
+				if ((symb == 'o' || symb == '$') && !area_map[loc.first][newCol].discovered)
+				{
+					// Update direction and discovered vars
+					area_map[loc.first][newCol].direction = dir;
+					area_map[loc.first][newCol].discovered = true;
+					return { loc.first, newCol };
+				}
+			}
+			//Else
+			return { -1, -1 };
+		}
+		else if (dir == 'e')
+		{
+			int newCol = loc.second + 1;
+			// Check if east loc exists
+			if (newCol < map_size) //col
+			{
+				char symb = area_map[loc.first][newCol].symbol;
+				// If land and not discovered
+				if ((symb == 'o' || symb == '$') && !area_map[loc.first][newCol].discovered)
+				{
+					// Update direction and discovered vars
+					area_map[loc.first][newCol].direction = dir;
+					area_map[loc.first][newCol].discovered = true;
+					return { loc.first, newCol };
+				}
+			}
+			//Else
+			return { -1, -1 };
+		}
+	}
+
+
+	// THIS FUNCTION TAKES IN A STARTING LAND POSITION AND SEARCHES
+	// CONTIGUOUS LAND ACCORDING TO SEARCH ORDER
+	// UPDATES: Treasure if found
+	// REQUIRES: start.direction has already been updated, start is a land loc
+	// RETURNS: True if treasure found, false if no treasure found
+	bool first_mate_search(std::pair<int, int> start)
+	{
+		// Push start to be first element in land_container
+		land_container.push_front(start);
+		std::pair<int, int> current;
+		while(!land_container.empty())
+		{
+			
+			current = land_container.front();
+			land_container.pop_front(); //land_cont now empty
+
+				
+			// Discover adjacent land in order
+			for(int i = 0; i < 4; ++i)
+			{
+				// Call helper function
+				std::pair<int, int> land = search_land(searchOrder[i], current);
+				
+				// If found
+				if(land.first != -1 && land.second != -1)
+				{
+					// Add to container according to container
+					if (firstCont == 's') 
+					{
+						land_container.push_front(land);
+					}
+					if (firstCont == 'q')
+					{
+						land_container.push_back(land);
+					}
+						
+					// Check if treasure
+					if(area_map[land.first][land.second].symbol == '$')
+					{
+						treasure = land;
+						return true;
+					} //if treasure
+				} //if found
+			} //for
+		}
+		// If you get to this point, container is empty, no treasure was found.
+		return false;
+	}
+	
+
+
+
+
+
+
+
+	
 	/**
 	 * FOR DEBUGGING PURPOSES
 	 */
@@ -265,10 +405,10 @@ private:
 	};
 
 	// This will be the container used on sea
-	std::deque< std::tuple<int, int> > sea_container;
+	std::deque< std::pair<int, int> > sea_container;
 	
 	// Container used on land
-	std::deque< std::tuple<int, int> > land_container;
+	std::deque< std::pair<int, int> > land_container;
 
 	// 2-D array of Locations, index with vec[row][col]
 	std::vector<std::vector<Location> > area_map;
