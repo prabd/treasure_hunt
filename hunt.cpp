@@ -99,6 +99,10 @@ public:
 				{
 					exit(1);
 				}
+				if(show_path == 'M' || show_path == 'L')
+				{
+					exit(1);
+				}
 				show_path = *optarg;
 				break;
 				
@@ -153,11 +157,11 @@ public:
 		area_map.resize(map_size, col);
 
 		// Update area_map according to file-type
-		if(input[0] == 'M' && input.size() == 1)
+		if(input[0] == 'M')
 		{
 			read_from_map();
 		}
-		else if(input[0] == 'L' && input.size() == 1)
+		else if(input[0] == 'L')
 		{
 			read_from_list();
 		}
@@ -431,7 +435,7 @@ public:
 							if (verbose)
 							{
 								cout << "party found treasure at " << treasure.first
-									<< "," << treasure.second << "\n";
+									<< "," << treasure.second << ".\n";
 							}
 							
 							return true;
@@ -440,7 +444,7 @@ public:
 						// VERBOSE
 						if (verbose)
 						{
-							cout << "party returned with no treasure\n";
+							cout << "party returned with no treasure.\n";
 						}
 					} // if land
 					
