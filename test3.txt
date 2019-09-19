@@ -1,0 +1,6 @@
+# Tests -help flag, should not run a search.
+# Options: -v, -s, -c queue, 
+L
+3
+0 1 $
+0 0 @
