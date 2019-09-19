@@ -44,7 +44,8 @@ public:
 									{ nullptr, 0, nullptr, '\0' } };
 
 
-		while ((option = getopt_long(argc, argv, "hc:f:o:vsp:", longOpts, &option_index)) != -1) {
+		while ((option = getopt_long(argc, argv, "hc:f:o:vsp:",
+				longOpts, &option_index)) != -1) {
 			switch (option) {
 			case 'c':
 				if (std::string(optarg) != "queue" && std::string(optarg) != "stack")
@@ -101,8 +102,6 @@ public:
 				show_path = *optarg;
 				break;
 				
-			// TODO
-			// Update help message
 			case 'h':
 				std::cout << "This program reads an input file that contains the file type,\n"
 					<< "map size, and details of the search area. It then attempts to find the\n"
@@ -166,13 +165,8 @@ public:
 	}
 
 private:
-	/*
-	*
-	 * THESE FUNCTIONS READ FROM A MAP OR A LIST AND UPDATE THE area_map MEMBER
-	*
-	 */
 
-	 // read_data helper function 1
+	// read_data helper function 1
 	// REQUIRES: area_map is already default initialized with proper size
 	// THIS FUNCTION UPDATES area_map
 	void read_from_map()
@@ -324,6 +318,7 @@ private:
 					if (area_map[land.first][land.second].symbol == '$')
 					{
 						treasure = land;
+						++land_count;
 						return true;
 					} 
 					
@@ -490,7 +485,7 @@ public:
 			if (treasure.first != -1 && treasure.second != -1)
 			{
 				cout << "Path length: " << path_len << "\n"
-					<< "Treasure Location: " << treasure.first << "," << treasure.second
+					<< "Treasure location: " << treasure.first << "," << treasure.second
 					<< "\n" << "--- STATS ---\n";
 			}
 		}
@@ -504,7 +499,7 @@ public:
 		{
 			int count = water_count + land_count;
 			cout << "No treasure found after investigating "
-				<< count << "locations." << endl;
+				<< count << " locations." << endl;
 		}
 		
 		else
@@ -514,25 +509,161 @@ public:
 				<< ".\n";
 		}
 	}
-	
-	/**
-	 * FOR DEBUGGING PURPOSES
-	 */
+
+	// Prints contents of area_map
+	// HELPER FOR show_path
 	void print_area_map()
 	{
-		cout << endl;
-		for(int row = 0; row < map_size; ++row)
+		for (int row = 0; row < map_size; ++row)
 		{
-			for(int col = 0; col < map_size; ++col)
+			for (int col = 0; col < map_size; ++col)
 			{
 				cout << area_map[row][col].symbol;
 			} //for
 			cout << endl;
 		} //for
-		cout << endl;
-		cout << "Start: " << start.first << start.second << endl;
-		cout << "Treasure: " << treasure.first << treasure.second << endl;
 	}
+
+	//THIS FUNCTION EDITS area_map and prints
+	void show_map(std::vector<std::pair<int,int > > &vec)
+	{
+		if(show_path != 'M')
+		{
+			return;
+		}
+		// Mark treasure as X
+		area_map[treasure.first][treasure.second].symbol = 'X';
+		// Loop thru vector, starting from location after treasure
+		for(size_t i = 1; i < vec.size(); ++i)
+		{
+			// If previous loc was a different row, make current symbol =  '|'
+			// If previous loc was different col, make current symbol '-'
+			int prev_row = vec[i - 1].first;
+			int prev_col = vec[i - 1].second;
+			int row = vec[i].first;
+			int col = vec[i].second;
+			
+			if(prev_row != row)
+			{
+				// If previous symbol is -, make it a plus
+				if(area_map[prev_row][prev_col].symbol == '-')
+				{
+					area_map[prev_row][prev_col].symbol = '+';
+					if (i != vec.size() - 1) {
+						area_map[row][col].symbol = '|';
+					}
+				}
+				else
+				{
+					if (i != vec.size() - 1) {
+						area_map[row][col].symbol = '|';
+					}
+				}
+			}
+			else if(prev_col != col)
+			{
+				// If previous symbol is |, make it a column
+				if (area_map[prev_row][prev_col].symbol == '|')
+				{
+					area_map[prev_row][prev_col].symbol = '+';
+					if (i != vec.size() - 1) {
+						area_map[row][col].symbol = '-';
+					}
+				}
+				else
+				{
+					if (i != vec.size() - 1) {
+						area_map[row][col].symbol = '-';
+					}
+				}
+			}
+		}
+		// Print
+		print_area_map();
+	}
+	
+	//THIS FUNCTION PRINTS LOCATIONS VISITED
+	void show_list(std::vector<std::pair<int, int> > &vec_in)
+	{
+		if(show_path != 'L')
+		{
+			return;
+		}
+		bool searching = false;
+		cout << "Sail:\n";
+		// End of vector is start
+		for(int i = int(vec_in.size()) - 1; i >= 0; --i)
+		{
+			if(is_land(vec_in[i].first, vec_in[i].second))
+			{
+				if(!searching)
+				{
+					cout << "Search:\n";
+					searching = true;
+				}
+			}
+			cout << vec_in[i].first << "," << vec_in[i].second << "\n";
+		}
+		
+	}
+	
+	// Backtrace function helper
+	std::pair<int, int> move_to_prev(int row, int col, char dir)
+	{
+		if(dir == 'n')
+		{
+			return { row + 1, col };
+		}
+		else if(dir == 's')
+		{
+			return { row - 1, col };
+		}
+		else if(dir == 'w')
+		{
+			return { row, col + 1 };
+		}
+		else
+		{
+			return { row, col - 1 };
+		}
+	}
+	
+	// THIS FUNCTION BACKTRACES FROM TREASURE TO START
+	// REQUIRES: TREASURE HAS BEEN FOUND
+	// MODIFIES: path_len
+	// RETURNS: vector of locations in path, with index 0 being the treasure,
+	//			and end index being start.
+	std::vector<std::pair<int, int> > backtrace_path()
+	{
+		// Push treasure to first location in vec
+		std::vector<std::pair<int, int> > vec;
+		vec.push_back(treasure);
+		
+		std::pair<int, int> current = treasure;
+		char dir = area_map[current.first][current.second].dir;
+		// While current is not the start
+		while(area_map[current.first][current.second].symbol != '@')
+		{
+			// Move to previous location
+			current = move_to_prev(current.first, current.second, dir);
+			// Update dir
+			dir = area_map[current.first][current.second].dir;
+			// Push new current to vector
+			vec.push_back(current);
+		}
+		// If you get to this point, current is now the start location
+		
+		// Path-len is equal to length of the vector
+		path_len = int(vec.size()) - 1;
+		
+		return vec;
+	}
+
+	
+	/**
+	 * FOR DEBUGGING PURPOSES
+	 */
+	
 
 	void print_options() const
 	{
@@ -545,6 +676,26 @@ public:
 		cout << "Show Path: " << show_path << endl;
 	}
 
+	void print_discovered() const
+	{
+		for(int row = 0; row < map_size; ++row)
+		{
+			for(int col = 0; col < map_size; ++col)
+			{
+				if(area_map[row][col].disc)
+				{
+					cout << "X";
+				}
+				// else
+				else
+				{
+					cout << area_map[row][col].symbol;
+				}
+			}
+			cout << endl;
+		}
+		cout << endl;
+	}
 
 private:
 
@@ -602,9 +753,30 @@ int main(int argc, char *argv[])
 	Hunt hunt;
 	hunt.get_options(argc, argv);
 	hunt.read_data();
-	//print_area_map();
+	//hunt.print_area_map();
 	//hunt.print_options();
-	bool found = hunt.captain_search();
+	bool found = hunt.captain_search(); // Will print verbose if specified
+
+	std::vector<std::pair<int, int>> locations;
+	// Create container to store visited locations
+	// Run only if found
+	if(found)
+	{
+		locations = hunt.backtrace_path();
+	}
+	
+	// Run always
+	hunt.print_stats(); // Prints Stats
+
+	// Run only if found
+	if(found)
+	{
+		hunt.show_list(locations);
+		hunt.show_map(locations);
+	}
+
+	// Run always
+	hunt.print_results();
 	
 	
 	return 0;
