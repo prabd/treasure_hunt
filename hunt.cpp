@@ -213,7 +213,8 @@ private:
 			{
 				treasure = { row, col };
 			}
-			if(symb == '@')*/
+			*/
+			if(symb == '@')
 			{
 				start = { row, col };
 			}
@@ -490,8 +491,9 @@ public:
 			{
 				cout << "Path length: " << path_len << "\n"
 					<< "Treasure location: " << treasure.first << "," << treasure.second
-					<< "\n" << "--- STATS ---\n";
+					<< "\n";
 			}
+			cout << "--- STATS ---\n";
 		}
 	}
 
@@ -503,7 +505,7 @@ public:
 		{
 			int count = water_count + land_count;
 			cout << "No treasure found after investigating "
-				<< count << " locations." << endl;
+				<< count << " locations.\n";
 		}
 		
 		else
@@ -753,6 +755,7 @@ int main(int argc, char *argv[])
 {
 	std::ios_base::sync_with_stdio(false);
 
+
 	// Create a hunt, read options, and read input file
 	Hunt hunt;
 	hunt.get_options(argc, argv);
@@ -764,16 +767,14 @@ int main(int argc, char *argv[])
 	std::vector<std::pair<int, int>> locations;
 	// Create container to store visited locations
 	// Run only if found
-	if(found)
+	if (found)
 	{
 		locations = hunt.backtrace_path();
 	}
-	
 	// Run always
 	hunt.print_stats(); // Prints Stats
-
 	// Run only if found
-	if(found)
+	if (found)
 	{
 		hunt.show_list(locations);
 		hunt.show_map(locations);
@@ -781,7 +782,8 @@ int main(int argc, char *argv[])
 
 	// Run always
 	hunt.print_results();
-	
+
+
 	
 	return 0;
 }
