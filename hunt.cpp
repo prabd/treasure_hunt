@@ -245,7 +245,7 @@ private:
 	
 	// Helper Function for First-Mate Search
 	// UPDATES direction of discovered land
-	// RETURNS: coordinates of discovered land, or -1, -1 if none found
+	// RETURNS: coordinates of discovered tjland, or -1, -1 if none found
 	std::pair<int, int> search_land(char dir, std::pair<int, int> loc)
 	{
 		int newRow = loc.first;
@@ -278,7 +278,9 @@ private:
 				// Update direction and disc
 				area_map[newRow][newCol].dir = dir;
 				area_map[newRow][newCol].disc = true;
+				// cout << "Discovered land at " << newRow << "," << newCol << "\n";
 				return { newRow, newCol };
+				
 			}
 		}
 		return { -1, -1 };
@@ -380,6 +382,7 @@ private:
 				// Update dir and disc
 				area_map[new_row][new_col].disc = true;
 				area_map[new_row][new_col].dir = dir;
+				// cout << "Discovered water at " << new_row << "," << new_col << "\n";
 				return { new_row, new_col };
 			}
 		}
@@ -663,44 +666,6 @@ public:
 		path_len = int(vec.size()) - 1;
 		
 		return vec;
-	}
-
-	
-	/**
-	 * FOR DEBUGGING PURPOSES
-	 */
-	
-
-	void print_options() const
-	{
-		cout << "Options: " << endl;
-		cout << "Captain Container: " << cap_type << endl;
-		cout << "First Mate Container: " << first_type << endl;
-		cout << "Hunt Order: " << order << endl;
-		cout << "Verbose: " << verbose << endl;
-		cout << "Statistics: " << stats << endl;
-		cout << "Show Path: " << show_path << endl;
-	}
-
-	void print_discovered() const
-	{
-		for(int row = 0; row < map_size; ++row)
-		{
-			for(int col = 0; col < map_size; ++col)
-			{
-				if(area_map[row][col].disc)
-				{
-					cout << "X";
-				}
-				// else
-				else
-				{
-					cout << area_map[row][col].symbol;
-				}
-			}
-			cout << endl;
-		}
-		cout << endl;
 	}
 
 private:

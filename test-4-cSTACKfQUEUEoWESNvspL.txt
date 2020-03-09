@@ -3,6 +3,7 @@
 # options: -o eswn, -v, -c queue, -f stack
 L
 4
+0 0 $
 0 2 o
 0 3 o
 1 1 o

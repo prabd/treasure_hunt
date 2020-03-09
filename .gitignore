@@ -1,1 +1,6 @@
 *.code-workspace
+Debug
+.exe
+.o
+hunt_debug
+.vcxproj
