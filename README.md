@@ -130,8 +130,8 @@ There are several options to modify the program behavior:
   * Sets captain search container (default is stack)
 * **-d, --scuba-diver <queue/stack>**
   * Sets scuba diver search container (default is queue)
-* **-o, --hunt-order <nesw>**
-  * Define hunt order, default is nesw.
+* **-o, --hunt-order `<nesw>`**
+  * Define hunt order, default is nesw
 * **-v, --verbose**
   * Prints verbose output as program runs
 * **-s, --stats**
