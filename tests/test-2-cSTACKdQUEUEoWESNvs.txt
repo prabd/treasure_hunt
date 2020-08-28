@@ -1,0 +1,8 @@
+# Test diagonal reach, and default override default
+# Options: captain: s, first-mate q, search-order: wesn, verbose: true, stats: true 
+# path length should be 3
+M
+3
+$.o
+.@.
+...

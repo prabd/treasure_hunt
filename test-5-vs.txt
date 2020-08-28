@@ -1,9 +1,0 @@
-# Tests having impassable land blocking treasure
-M
-6
-@.....
-.oo...
-o#..##
-...o#$
-######
-######

@@ -1,7 +1,0 @@
-# This tests impassable start location
-M
-4
-####
-#@##
-##$.
-####

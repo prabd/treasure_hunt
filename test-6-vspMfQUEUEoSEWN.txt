@@ -1,9 +1,0 @@
-# Tests captain immediately dispatching first-mate when he sees land
-# Correct path length should be 3, not 1
-# -vspMfQUEUE -o sewn
-M
-4
-....
-.oo.
-o@$.
-.ooo

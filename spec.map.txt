@@ -1,9 +1,0 @@
-# Spec Map
-# Two small islands with treasure in the NW corner and start in the SE corner.
-M
-5
-o$...
-oo...
-#..o.
-..oo.
-....@
